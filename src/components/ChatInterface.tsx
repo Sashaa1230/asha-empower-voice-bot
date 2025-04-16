@@ -1,21 +1,23 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send } from 'lucide-react';
+import { Send, Mic, MicOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import VoiceRecognition from './VoiceRecognition';
+import { Card, CardContent } from '@/components/ui/card';
 import ChatMessage from './ChatMessage';
 import { ChatMessage as ChatMessageType, initialMessages, sampleResponses } from '@/data/mock-data';
 import { useToast } from '@/hooks/use-toast';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessageType[]>(initialMessages);
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const recognitionRef = useRef<any>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -48,11 +50,14 @@ const ChatInterface: React.FC = () => {
 
     // Simulate a delay for realism
     setTimeout(() => {
+      const suggestions = ['Tell me more', 'How does it work?', 'Can you explain?', 'What are the benefits?'];
+      
       const botResponse: ChatMessageType = {
         id: Date.now().toString(),
         content: responseContent,
         role: 'assistant',
         timestamp: new Date(),
+        suggestions: suggestions
       };
       
       setMessages(prev => [...prev, botResponse]);
@@ -82,31 +87,78 @@ const ChatInterface: React.FC = () => {
     }
   };
 
-  const handleVoiceInput = (transcript: string) => {
-    if (transcript.trim()) {
-      setInput(transcript);
+  const startListening = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       toast({
-        title: "Voice detected",
-        description: transcript,
+        title: "Speech Recognition Not Supported",
+        description: "Your browser doesn't support speech recognition.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Initialize speech recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = 'en-US';
+
+    recognitionRef.current.onstart = () => {
+      setIsListening(true);
+      toast({
+        title: "Listening...",
+        description: "Speak now, I'm listening.",
         duration: 3000
       });
+    };
+
+    recognitionRef.current.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+      setIsListening(false);
       
       // Focus the input to show the transcribed text
       setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
+    };
+
+    recognitionRef.current.onerror = (event: any) => {
+      console.error("Speech recognition error", event.error);
+      setIsListening(false);
+      toast({
+        title: "Error",
+        description: `Speech recognition error: ${event.error}`,
+        variant: "destructive"
+      });
+    };
+
+    recognitionRef.current.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current.start();
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
     }
   };
 
   return (
     <Card className="h-full flex flex-col overflow-hidden shadow-md">
-      <CardHeader className="border-b pb-3 pt-4">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <span className="text-asha-purple">Asha</span>
-          <span className="text-xs bg-asha-purple/10 text-asha-purple px-2 py-0.5 rounded-full">AI Assistant</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-y-auto p-4">
+      <CardContent className="flex-1 overflow-y-auto p-4 pt-6">
         <div className="flex flex-col">
           {messages.map((message) => (
             <ChatMessage key={message.id} message={message} />
@@ -119,10 +171,10 @@ const ChatInterface: React.FC = () => {
                 </Avatar>
               </div>
               <div className="py-2 px-3 bg-white rounded-lg border border-gray-200 text-gray-800 rounded-tl-none">
-                <div className="wave-dots">
-                  <span></span>
-                  <span></span>
-                  <span></span>
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-pulse"></div>
+                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-pulse delay-75"></div>
+                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-pulse delay-150"></div>
                 </div>
               </div>
             </div>
@@ -141,10 +193,15 @@ const ChatInterface: React.FC = () => {
             className="flex-1"
             disabled={isProcessing}
           />
-          <VoiceRecognition 
-            onTranscript={handleVoiceInput} 
-            className="flex-shrink-0"
-          />
+          <Button
+            onClick={toggleListening}
+            variant="outline"
+            className={isListening ? "bg-red-50 text-red-500 border-red-200" : ""}
+            size="icon"
+            type="button"
+          >
+            {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          </Button>
           <Button
             onClick={handleSendMessage}
             disabled={input.trim() === '' || isProcessing}
@@ -158,7 +215,5 @@ const ChatInterface: React.FC = () => {
     </Card>
   );
 };
-
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default ChatInterface;

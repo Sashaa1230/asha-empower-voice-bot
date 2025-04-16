@@ -3,6 +3,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { ChatMessage as ChatMessageType } from '@/data/mock-data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -39,7 +40,24 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
               : "bg-white text-gray-800 border border-gray-200 rounded-tl-none"
           )}
         >
-          <p className="text-sm">{message.content}</p>
+          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+          
+          {/* Suggestion buttons - only show for assistant messages */}
+          {!isUser && message.suggestions && message.suggestions.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {message.suggestions.map((suggestion, index) => (
+                <Button 
+                  key={index} 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs bg-white hover:bg-gray-100 text-asha-purple border border-asha-purple/30"
+                >
+                  {suggestion}
+                </Button>
+              ))}
+            </div>
+          )}
+          
           <div 
             className={cn(
               "text-xs mt-1",

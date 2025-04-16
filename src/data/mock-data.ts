@@ -1,9 +1,9 @@
-
 export type ChatMessage = {
   id: string;
   content: string;
   role: 'user' | 'assistant';
   timestamp: Date;
+  suggestions?: string[];
 };
 
 export type JobListing = {
@@ -29,9 +29,10 @@ export type Challenge = {
 export const initialMessages: ChatMessage[] = [
   {
     id: '1',
-    content: 'Hello! I\'m Asha, your career assistant from JobsForHer Foundation. How can I help you today?',
+    content: "Hello! I'm ASHA, the AI assistant for JobsForHer Foundation. I'm here to help empower your career journey with:\n\n• Discovering job listings and opportunities for women\n• Finding community events, sessions and workshops\n• Connecting with mentorship programs\n• Accessing women empowerment resources and initiatives\n• Answering your questions about career development\n\nHow can I assist you today?",
     role: 'assistant',
-    timestamp: new Date(),
+    timestamp: new Date(Date.now() - 60000),
+    suggestions: ['Job Listings', 'Community Events', 'Mentorship Programs', 'Women Empowerment']
   },
 ];
 
@@ -113,12 +114,12 @@ export const dailyChallenges: Challenge[] = [
   },
 ];
 
-export const sampleResponses: Record<string, string> = {
-  greeting: "Hello! I'm Asha, your career assistant from JobsForHer Foundation. How can I help you today?",
-  jobSearch: "I'd be happy to help you find job opportunities. Could you tell me what role you're looking for and your preferred location?",
-  resume: "Crafting a powerful resume is crucial! Here are some key tips: 1) Highlight your achievements with quantifiable results, 2) Tailor your resume for each application, 3) Use strong action verbs, 4) Keep it concise and error-free.",
-  interview: "Preparing for interviews? Remember to research the company thoroughly, practice your answers to common questions, prepare thoughtful questions to ask the interviewer, and follow up with a thank you note afterward.",
-  mentorship: "Mentorship can accelerate your career growth! JobsForHer offers mentorship programs connecting women with experienced professionals across industries. Would you like me to share more details about our mentorship opportunities?",
-  events: "JobsForHer regularly hosts career events, workshops, and networking opportunities. Our upcoming events include a Leadership Summit next month and a series of technical workshops starting next week.",
-  fallback: "I'm still learning and didn't quite catch that. Could you rephrase your question or choose a topic like job search, resume building, interview tips, or mentorship programs?"
+export const sampleResponses = {
+  greeting: "Hello! It's great to connect with you. I'm ASHA, your AI career assistant from JobsForHer Foundation. How can I help with your career journey today?",
+  jobSearch: "I can help you find great job opportunities. What kind of roles are you looking for? I can filter by location, remote options, industry, or part-time/full-time preferences.",
+  resume: "I can provide guidance on optimizing your resume. Would you like tips on highlighting your skills, formatting advice, or tailored feedback for specific industries?",
+  interview: "Preparing for interviews is crucial. I can share common interview questions, industry-specific preparation tips, or strategies to address career gaps confidently.",
+  mentorship: "Mentorship can accelerate your career growth. I can help you find mentors in your field, prepare for mentorship conversations, or suggest mentorship programs through JobsForHer.",
+  events: "There are several upcoming career events for women. Would you like to explore networking events, skill-building workshops, or industry-specific conferences?",
+  fallback: "I understand you're asking about something important. To help you better, could you tell me more about what specific career information you're looking for?"
 };
