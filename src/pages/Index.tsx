@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { 
-  Chat, 
+  MessageSquare, 
   CalendarIcon, 
   Briefcase, 
   Users, 
